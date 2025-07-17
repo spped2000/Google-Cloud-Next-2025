@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI - OCR Workflow</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 40px auto; padding: 20px; background-color: #f4f4f9; }
+        h1, h2 { color: #333; }
+        .container { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        form { display: flex; flex-direction: column; gap: 20px; }
+        label { font-weight: bold; margin-bottom: 5px; }
+        input[type="file"], input[type="email"] { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        button { background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .message { padding: 15px; margin-top: 20px; border-radius: 4px; border: 1px solid; }
+        .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .results-box { margin-top: 20px; padding: 20px; background: #e9ecef; border-radius: 4px; }
+        .annotated-image { max-width: 100%; border: 1px solid #ddd; margin-top: 15px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ FastAPI OCR to Email Workflow</h1>
+        <p>Upload an image and enter an email to process.</p>
+
+        {% if error %}
+            <div class="message error">❌ <strong>Error:</strong> {{ error }}</div>
+        {% elif results and results.status == 'success' %}
+             <div class="message success">✅ Workflow completed successfully! Email sent.</div>
+        {% endif %}
+
+        <form action="/process" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="image">1. Select an image:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+            </div>
+            <div class="form-group">
+                <label for="recipient">2. Enter recipient's email:</label>
+                <input type="email" id="recipient" name="recipient" placeholder="youremail@example.com" required>
+            </div>
+            <button type="submit">🚀 Run Workflow</button>
+        </form>
+
+        {% if results and results.status == 'success' %}
+            <div class="results-box">
+                <h2>Workflow Results</h2>
+                <p><strong>OCR Status:</strong> {{ results.ocr_result.status }}</p>
+                <p><strong>Email Status:</strong> {{ results.email_result.status }}</p>
+
+                {% set ocr_data = results.ocr_result.ocr_results %}
+                {% if ocr_data and ocr_data.extracted_text %}
+                    <h3>📝 Extracted Text ({{ ocr_data.extracted_text|length }} regions)</h3>
+                    <ul>
+                        {% for text in ocr_data.extracted_text %}
+                            <li>{{ text }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if processed_image_filename %}
+                    <h3>🖼️ Annotated Image</h3>
+                    <p>This image was also emailed to the recipient.</p>
+                    {% set base, ext = processed_image_filename.rsplit('.', 1) %}
+                    {% set annotated_path = "/static/" + base + "_annotated.png" %}
+                    <img src="{{ annotated_path }}" alt="Annotated Image" class="annotated-image">
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
