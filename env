@@ -1,0 +1,6 @@
+GOOGLE_API_KEY=AIzaSyCEXb8FI9KDaJ7nkixKjm6dXCxkAMpe-pI
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+FROM_EMAIL=spped2000@gmail.com
+SMTP_USERNAME=spped2000@gmail.com
+SMTP_PASSWORD=hgjpxzagndbwkewz
