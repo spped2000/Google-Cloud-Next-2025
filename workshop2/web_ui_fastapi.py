@@ -6,31 +6,26 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
-# --- Important: Import the existing tester and utility functions ---
+
 try:
     from test_full_workflow import OCREmailWorkflowTester, wait_for_servers
 except ImportError:
     print("❌ Error: Make sure 'test_full_workflow.py' is in the same directory.")
     exit(1)
 
-# --- FastAPI App Configuration ---
+
 app = FastAPI()
 
-# Create directories if they don't exist
 os.makedirs("uploads", exist_ok=True)
 os.makedirs("templates", exist_ok=True)
 
-# Mount the 'uploads' directory to serve images that have been processed
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
-# Setup Jinja2 templates
 templates = Jinja2Templates(directory="templates")
 
 # --- Main Application Logic ---
 
-# Dependency to get the orchestrator
 def get_tester():
-    # Config can be simple here as the real config is in the agent servers
     config = {"google_api_key": os.getenv("GOOGLE_API_KEY"), "smtp_config": {}}
     return OCREmailWorkflowTester(config)
 
@@ -51,7 +46,6 @@ async def process_image(
     error = None
 
     try:
-        # 1. Save the uploaded file asynchronously
         file_path = os.path.join("uploads", image.filename)
         async with aiofiles.open(file_path, 'wb') as out_file:
             content = await image.read()
